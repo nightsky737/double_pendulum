@@ -13,8 +13,8 @@ document.getElementById("renderer").appendChild(renderer.domElement)
 //cam + lighting
 const fov = 75 //in degrees
 const aspect = W / H //aspect ratio
-const near = 0.1 //anything too close is not rendered
-const far = 1000000 //anything too far is not rendered either
+const near = 0.1 
+const far = 1000000 
 const cam = new THREE.PerspectiveCamera(fov, aspect, near, far)
 cam.position.z = 2;
 const scene = new THREE.Scene(); 
@@ -148,9 +148,10 @@ const MAX_TRAIL = 300; // cap trail length
     }
 
 //Removal/editing of shit
-async function remove(idx){
+async function remove_body(idx){
     let toremove = body_info[idx];
-    body_info = body_info.filter(toremove);
+    destroy(toremove['sphere'])
+    body_info = body_info.filter((body) => body != toremove);
 
     fetch('/remove', {
         method: 'POST',  
@@ -200,8 +201,6 @@ function animate(t=0){
     requestAnimationFrame(animate);
     renderer.render(scene, cam) 
     controls.update()
-
- 
 
 }
 setInterval(pollCoords, 50);
@@ -294,8 +293,7 @@ async function add(){
 document.getElementById("addButton").addEventListener("click", add);
 
 async function removeLast(){
-    await fetch('/remove') 
-    remove(body_info.length - 1)
+    remove_body(body_info.length - 1)
     reload_bodies()
 }
 document.getElementById("removeButton").addEventListener("click", removeLast);

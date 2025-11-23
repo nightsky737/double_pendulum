@@ -147,7 +147,7 @@ class Simulation:
         self.bodies.append(body(np.random.rand(3,) * 400, v=(np.random.rand(3,) - 0.5)* 200,r=random.random()/2, m= 10e10, c=hex_color_code))
 
     def remove(self, idx):
-        self.bodies.remove(idx)
+        self.bodies.pop(idx)
         self.clean_logs_after()
         
 # Create simulation instance
