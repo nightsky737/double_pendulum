@@ -7,7 +7,7 @@
 
 # Flask endpoints:
 - /Coords : Should return a list of coords
-- /Add : 
+- /Add : Adds smth
 - /Remove : 
 - /Change : takes what should be changed + new value
 - /ChangeVector : Changes vector quantities?
@@ -17,3 +17,6 @@
 - allow clicking to moves
 - Fix jank when resetting while paused
 - CLean logs so when user edits smth it doesnt do weird stuff
+- fix keep trails on reload bodies
+
+

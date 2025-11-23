@@ -76,16 +76,15 @@ class Simulation:
         self.timestep = 0
         self.logs = {}
 
-
-
         self.add()
         self.add()
         self.add()
 
-        # inital conditions
     def clean_logs_after(self):
         #removes logs after self
-        pass
+        for time in self.logs.keys():
+            if time > self.timestep:
+                del self.logs[time]
 
     def wind(self, step_to_wind_to):
         if step_to_wind_to < self.timestep:
@@ -147,7 +146,10 @@ class Simulation:
         hex_color_code = '#' + ''.join(hex_components)
         self.bodies.append(body(np.random.rand(3,) * 400, v=(np.random.rand(3,) - 0.5)* 200,r=random.random()/2, m= 10e10, c=hex_color_code))
 
-
+    def remove(self, idx):
+        self.bodies.remove(idx)
+        self.clean_logs_after()
+        
 # Create simulation instance
 sim = Simulation([])
 
@@ -157,7 +159,6 @@ def run_simulation():
             sim.step()
             threading.Event().wait(0.03)
 
-# Start simulation in background thread
 threading.Thread(target=run_simulation, daemon=True).start()
 
 # route to the simulation page
@@ -165,7 +166,6 @@ threading.Thread(target=run_simulation, daemon=True).start()
 def index():
     return render_template('3d_index.html', origin_x=sim.origin_x, origin_y=sim.origin_y)
 
-# route to get pendulum coords
 @app.route('/coords')
 def coords():
     return jsonify(sim.get_coords())
@@ -190,3 +190,14 @@ def wind():
         timestep = request.get_json()["timestep"]
         sim.wind(int(timestep))
         return {}
+
+@app.route("/remove", methods=["POST"]) 
+def remove():
+    if request.method == 'POST':  
+        sim.remove(request.get_json()["index"])
+        return {}
+
+@app.route("/add")
+def add():
+    sim.add()
+    return {}

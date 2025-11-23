@@ -83,7 +83,6 @@ async function setup(){
 
     binfo.forEach(body => {
         body['trail'] = []
-        //creation and addition of body to scene
         const geometry = new THREE.SphereGeometry( body['r'], 32, 16 );
         const material = new THREE.MeshBasicMaterial( { color: body['c'] } );
         const sphere = new THREE.Mesh( geometry, material );
@@ -106,9 +105,16 @@ async function setup(){
 
 let body_info = await setup()
 
+async function reload_bodies(keep_trails = false){
+    body_info.forEach(info => {
+        destroy(info['sphere'])
+    })
+    body_info = await setup();
+}
+
+//updates (movemetn)
 function update_bodies(coords) {
-    for (let i = 0; i < coords.length; i++) {
-        
+    for (let i = 0; i < coords.length; i++) {    
         body_info[i]['sphere'].position.x = coords[i].x 
         body_info[i]['sphere'].position.y = coords[i].y 
         body_info[i]['sphere'].position.z = coords[i].z 
@@ -133,22 +139,44 @@ const MAX_TRAIL = 300; // cap trail length
         coord.x =  coord.x /100;
         coord.y =  coord.y /100;
         coord.z =  coord.z /100;
+  
+
         });
         }
 
 
     }
 
-let prevtrails = []
+//Removal/editing of shit
+async function remove(idx){
+    let toremove = body_info[idx];
+    body_info = body_info.filter(toremove);
+
+    fetch('/remove', {
+        method: 'POST',  
+        credentials: 'include',
+        headers: {
+        'Content-Type': 'application/json',  
+        "Accept": "application/json"
+        },
+    body: JSON.stringify({ "index": idx}) 
+    })
+
+}  
+
 
 //Animation
+let prevtrails = []
 function animate(t=0){
+            try{
+
             if (latestCoords != null) {
                 // Update trails
                 for(let i = 0; i < body_info.length; i++){
                     // console.log(body_info[i])
                     body_info[i]['trail'].push({x:  latestCoords[i].x, y: latestCoords[i].y, z : latestCoords[i].z })
                     if (body_info[i]['trail'].length > MAX_TRAIL) body_info[i]['trail'].shift(); 
+  
 
                 }
                 
@@ -167,28 +195,57 @@ function animate(t=0){
                     prevtrails.push(line)
                 });
             }
-
+       }catch (e){
+    }
     requestAnimationFrame(animate);
     renderer.render(scene, cam) 
     controls.update()
+
+ 
+
 }
 setInterval(pollCoords, 50);
 
 animate();
 
-let curhighlighted = null;
-function highlight(idx){
-let body = body_info[idx]
+//UI
 
-if (curhighlighted == body){
-    return;
+//nav functions
+function openNav() {
+
+  document.getElementById("mySidebar").style.width = "250px";
+  document.getElementById("renderer").style.marginLeft = "250px";
 }
 
-const geo = new THREE.SphereGeometry(body['r'] * 1.2, 32, 16)
-const material = new THREE.MeshBasicMaterial({
-    color: body['c'],
-    transparent: true,
-    opacity: 0.5,
+function closeNav() {
+  document.getElementById("mySidebar").style.width = "0";
+  document.getElementById("renderer").style.marginLeft= "0";
+}
+
+//Highlights
+
+let curhighlighted = null;
+function highlight(idx){
+    let body = body_info[idx]
+
+    if (curhighlighted == body){
+        //dehighlight
+        destroy(curhighlighted['highlighted_mesh']) 
+        curhighlighted['highlighted_mesh'] = null // removes old highlited
+
+        closeNav()
+
+
+        curhighlighted = null;
+        return;
+    }
+
+    openNav()
+    const geo = new THREE.SphereGeometry(body['r'] * 1.2, 32, 16)
+    const material = new THREE.MeshBasicMaterial({
+        color: body['c'], 
+        transparent: true,
+        opacity: 0.5,
 })
 
 body['highlighted_mesh'] = new THREE.Mesh(geo, material); 
@@ -203,8 +260,8 @@ curhighlighted = body //now this is the currently clicked
 }
 
 
-//UI
 
+//Controls
 const header = document.getElementById("overlay-header");
 const content = document.getElementById("overlay-content");
 
@@ -223,15 +280,26 @@ async function pause(){
 }
 document.getElementById("pauseButton").addEventListener("click", pause);
 
-
 async function reset(){
     await fetch('/reset') 
-    body_info.forEach(info => {
-        destroy(info['sphere'])
-    })
-    body_info = await setup()
+    reload_bodies()
 }
 document.getElementById("resetButton").addEventListener("click", reset);
+
+
+async function add(){
+    await fetch('/add') 
+    reload_bodies()
+}
+document.getElementById("addButton").addEventListener("click", add);
+
+async function removeLast(){
+    await fetch('/remove') 
+    remove(body_info.length - 1)
+    reload_bodies()
+}
+document.getElementById("removeButton").addEventListener("click", removeLast);
+
 
 async function wind(){
 fetch('/wind', {

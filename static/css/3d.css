@@ -36,24 +36,11 @@ body {
   margin-left: 50px;
 }
 
-.openbtn {
-  font-size: 20px;
-  cursor: pointer;
-  background-color: #111;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-}
-
-.openbtn:hover {
-  background-color: #444;
-}
-
 
 #controls {
     position: absolute;
     top: 10px;
-    left: 10px;
+    right: 10px;
     width: 200px;
     background: rgba(0, 0, 0, 0.7);
     color: white;
