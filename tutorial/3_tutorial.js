@@ -21,6 +21,12 @@ cam.position.z = 2;
 const scene = new THREE.Scene(); //adds the scene ig
 
 
+
+const size = 10;
+const divisions = 10;
+const gridHelperXY = new THREE.GridHelper( size, divisions );
+scene.add( gridHelperXY );
+
 // 3.js has some base objects you can just shove in
 
 //geometry + material applied are combined in mesh
@@ -32,7 +38,12 @@ const mat = new THREE.MeshStandardMaterial(({
 )) 
 
 const mesh = new THREE.Mesh(geo, mat);
-scene.add(mesh);
+// scene.add(mesh);
+
+const geometry = new THREE.SphereGeometry(.2, 32, 16 );
+const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+const sphere = new THREE.Mesh( geometry, material );
+scene.add( sphere );
 
 //add a light to the thing.
 const hemilight = new THREE.HemisphereLight(0xffff, 0x000);
@@ -44,7 +55,7 @@ const controls = new OrbitControls(cam, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.03; 
 
-
+mesh.position.x = 4.5
 /*
 uhh animate animates the object
 t is the timestep (not dt)
@@ -52,7 +63,6 @@ animate gets called over and over again ig. why?
 */
 function animate(t=0){
     requestAnimationFrame(animate);
-    mesh.scale.setScalar(Math.cos(t * 0.001) + 1.0)
 
     mesh.rotation.y = t * 0.01
     renderer.render(scene, cam)

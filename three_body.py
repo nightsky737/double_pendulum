@@ -16,6 +16,7 @@ class body:
         self.a = a #x, y, z vector
         self.m = m
         self.c = c
+        self.r = 0
 
         self.isinitial = True
 
@@ -95,8 +96,11 @@ class Simulation:
 
     def get_coords(self):
         return [
-            {'x': body.x[0], 'y': body.x[1]} for body in self.bodies
+            {'x': body.x[0], 'y': body.x[1], 'z' : body.x[2]} for body in self.bodies
         ]
+
+    def get_body_info(self):
+        return [{'r': body.r, 'c' : body.c} for body in self.bodies]
 
     def pause(self):
         self.paused = not self.paused
@@ -104,6 +108,10 @@ class Simulation:
     def reset(self):
         for body in self.bodies:
             body.reset()
+
+    def add(self):
+        self.bodies.append(body(np.random.rand(3,) * 400, v=np.random.rand(3,) * 20, m= 10e10 ))
+
 
 
 # Create simulation instance
@@ -137,3 +145,7 @@ def pause():
 def reset():
     sim.reset()
     return {}
+
+@app.route("/get_body_info")
+def body_info():
+    return sim.get_body_info()
