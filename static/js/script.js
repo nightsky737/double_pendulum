@@ -35,21 +35,28 @@
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // color, intensity
     scene.add(ambientLight)
 
-    const size = 10;
+    const size = 25;
     const divisions = 10;
     const gridHelperXZ = new THREE.GridHelper( size, divisions );
     const gridHelperYZ = new THREE.GridHelper( size, divisions );
-    // gridHelperYZ.rotation.z =
-
     const gridHelperXY = new THREE.GridHelper( size, divisions );
 
+    gridHelperYZ.rotation.z = 0.5 * Math.PI
+    gridHelperYZ.position.x = - size /2
+
+    gridHelperXY.rotation.x = 0.5 * Math.PI
+    gridHelperXY.position.z = - size / 2
+    
+    gridHelperXZ.position.y = -size / 2
 
     scene.add( gridHelperXY );
     scene.add( gridHelperYZ );
     scene.add( gridHelperXZ );
     //Actual rendering/getting of objects
 
-    //ig initial info:
+
+
+    //Initial setup/info of bodies
     let body_info = []
     await fetch('/get_body_info').then(response => { //await functions depending on what is returned: promise -> waits. normal val -> doesnt
         return response.json(); 
@@ -65,6 +72,7 @@
         const material = new THREE.MeshBasicMaterial( { color: body['c'] } );
         const sphere = new THREE.Mesh( geometry, material );
         body['sphere'] = sphere
+        body['highlighted'] = false;
         scene.add( sphere );
 
     });

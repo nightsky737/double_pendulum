@@ -7,7 +7,6 @@ app = Flask(__name__) #assuming this makes flask stuff
 
 G = 6.67 * 10 ** -6#-11
 
-#this is not a neural network so screw this im making a class for the bodies! I won't have constant object creation bite me in the ass again!
 class body:
     def __init__(self, x=np.array([0,0,0], dtype='float64'),
                   v=np.array([0,0,0], dtype='float64'), 
@@ -38,12 +37,6 @@ class body:
         if self == other:
             pass
         
-        #shit i forgor the formula
-        # Gm^2/r 
-        
-        #YES I CAN NON VECTORIZE THIS
-        #oh shit theres direction
-        #uh other.m * a = G * self.m * other.m / r_squred
         difference = self.x  - other.x
         r_squared = sum(difference * difference)
         a = G * self.m / r_squared if r_squared != 0 else r_squared
@@ -81,10 +74,6 @@ class Simulation:
         # inital conditions
 
     def step(self, dt: float=0.06):
-        # for i in range(len(self.bodies)):
-        #     for j in range(i+1, len(self.bodies)):
-        #         self.bodies[i].attract(self.bodies[j])
-        #         self.bodies[j].attract(self.bodies[i])
         for body in self.bodies:
             for body2 in self.bodies:
                 body.attract(body2)
@@ -114,7 +103,6 @@ class Simulation:
         rgb_values = random.randint(150,255),random.randint(150,255),random.randint(150,255) 
         hex_components = [f"{value:02x}" for value in rgb_values]
         hex_color_code = '#' + ''.join(hex_components)
-
         self.bodies.append(body(np.random.rand(3,) * 400, v=(np.random.rand(3,) - 0.5)* 200,r=random.random()/2, m= 10e10, c=hex_color_code))
 
 

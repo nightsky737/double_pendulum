@@ -14,3 +14,4 @@
 
 # Todo:
 - overlay navbar
+- allow clicking to moves
