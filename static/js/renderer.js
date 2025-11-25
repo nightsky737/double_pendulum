@@ -1,15 +1,24 @@
 import * as THREE from "three"
 import { OrbitControls } from "https://unpkg.com/three@0.112/examples/jsm/controls/OrbitControls.js";
 import { InteractionManager } from "./libs/three.interactive.js";
-//Screen setup shit
 
+//globalsish
+let prevtrails = []
+let paused = false;
+
+//rendere setup
 const W = window.innerWidth;
 const H = window.innerHeight;
 const renderer = new THREE.WebGLRenderer(); //antialias helps blend colors ig
-
 renderer.setSize(W, H);
 document.getElementById("renderer").appendChild(renderer.domElement) 
 
+document.querySelectorAll(".x-group")
+    .forEach(group => group.addEventListener("input", onEdit));
+document.querySelectorAll(".v-group")
+    .forEach(group => group.addEventListener("input", onEdit));
+document.querySelectorAll(".a-group")
+    .forEach(group => group.addEventListener("input", onEdit));
 //cam + lighting
 const fov = 75 //in degrees
 const aspect = W / H //aspect ratio
@@ -110,14 +119,22 @@ async function reload_bodies(keep_trails = false){
         destroy(info['sphere'])
     })
     body_info = await setup();
+    if (!keep_trails && prevtrails != null){
+        prevtrails.forEach(trail=>{
+                destroy(trail)
+            })
+    }
+    update_bodies(body_info, 100);
 }
 
 //updates (movemetn)
-function update_bodies(coords) {
-    for (let i = 0; i < coords.length; i++) {    
-        body_info[i]['sphere'].position.x = coords[i].x 
-        body_info[i]['sphere'].position.y = coords[i].y 
-        body_info[i]['sphere'].position.z = coords[i].z 
+function update_bodies(coords, scaler = 1) {
+    for (let i = 0; i < coords.length; i++) {
+        // console.log(paused)
+        // console.log(coords)
+        body_info[i]['sphere'].position.x = coords[i].x /scaler
+        body_info[i]['sphere'].position.y = coords[i].y/scaler
+        body_info[i]['sphere'].position.z = coords[i].z /scaler
 
     }
 }
@@ -139,7 +156,6 @@ const MAX_TRAIL = 300; // cap trail length
         coord.x =  coord.x /100;
         coord.y =  coord.y /100;
         coord.z =  coord.z /100;
-  
 
         });
         }
@@ -149,63 +165,25 @@ const MAX_TRAIL = 300; // cap trail length
 
 //Removal/editing of shit
 async function remove_body(idx){
+
     let toremove = body_info[idx];
     destroy(toremove['sphere'])
     body_info = body_info.filter((body) => body != toremove);
 
     fetch('/remove', {
-        method: 'POST',  
+        method: 'POST',   
         credentials: 'include',
         headers: {
         'Content-Type': 'application/json',  
         "Accept": "application/json"
         },
     body: JSON.stringify({ "index": idx}) 
+
+
     })
 
 }  
 
-
-//Animation
-let prevtrails = []
-function animate(t=0){
-            try{
-
-            if (latestCoords != null) {
-                // Update trails
-                for(let i = 0; i < body_info.length; i++){
-                    // console.log(body_info[i])
-                    body_info[i]['trail'].push({x:  latestCoords[i].x, y: latestCoords[i].y, z : latestCoords[i].z })
-                    if (body_info[i]['trail'].length > MAX_TRAIL) body_info[i]['trail'].shift(); 
-  
-
-                }
-                
-                update_bodies(latestCoords)
-
-                prevtrails.forEach(trail=>{
-                    destroy(trail)
-                })
-                prevtrails = []
-
-                body_info.forEach(info => {
-                    const mat = new THREE.LineBasicMaterial({color: info['c']})
-                    const geo = new THREE.BufferGeometry().setFromPoints(info['trail'] )
-                    const line = new THREE.Line(geo, mat)
-                    scene.add(line)
-                    prevtrails.push(line)
-                });
-            }
-       }catch (e){
-    }
-    requestAnimationFrame(animate);
-    renderer.render(scene, cam) 
-    controls.update()
-
-}
-setInterval(pollCoords, 50);
-
-animate();
 
 //UI
 
@@ -224,6 +202,7 @@ function closeNav() {
 //Highlights
 
 let curhighlighted = null;
+let curhighlightedidx = -1;
 function highlight(idx){
     let body = body_info[idx]
 
@@ -233,7 +212,6 @@ function highlight(idx){
         curhighlighted['highlighted_mesh'] = null // removes old highlited
 
         closeNav()
-
 
         curhighlighted = null;
         return;
@@ -256,6 +234,75 @@ if( curhighlighted != null ){
 }
 
 curhighlighted = body //now this is the currently clicked
+curhighlightedidx = idx;
+
+updateValues();
+
+//  {'r': float(body.r), 'c' : body.c, 'x' : body.x.tolist(), 'v': body.v.tolist(), 'a' : body.a.tolist()}
+
+
+
+}
+
+async function updateValues(){
+    if (curhighlighted == null){
+        return;
+    }
+
+    let curhighdata = null
+    // should update
+    await fetch('/get_full_body_info', {
+        method: 'POST',  
+        credentials: 'include',
+        headers: {
+        'Content-Type': 'application/json',  
+        "Accept": "application/json"
+        },
+    body: JSON.stringify({ "index": curhighlightedidx}) 
+    }).then(response => { 
+        return response.json(); 
+    }).then(data =>{
+        curhighdata = data
+    }
+    )
+    // console.log("a", curhighdata['a'])
+    let i = 0;
+    document.querySelectorAll(".x-group")
+        .forEach(group => {
+            group.value = curhighdata['x'][i]
+        i++;});
+    i = 0
+   document.querySelectorAll(".v-group")
+        .forEach(group => {
+            group.value = curhighdata['v'][i]
+        i++;});
+    i = 0
+    document.querySelectorAll(".a-group")
+        .forEach(group => {
+            group.value = curhighdata['a'][i]
+        i++;});
+}
+
+
+//Editing properties
+async function onEdit(e) {
+    if (!paused) {
+        paused = true;
+        await fetch('/pause');
+    }
+
+    fetch('/update', {
+        method: 'POST',  
+        credentials: 'include',
+        headers: {
+        'Content-Type': 'application/json',  
+        "Accept": "application/json"
+        },
+    body: JSON.stringify( {'idx' : curhighlightedidx, 'r' : 2  }) 
+    })
+   
+
+  
 }
 
 
@@ -275,7 +322,12 @@ header.addEventListener("click", () => {
 });
 
 async function pause(){
-    await fetch('/pause') 
+    if (paused){
+    await fetch('/unpause');
+    }else{
+    await fetch('/pause');
+    }
+    paused = ! paused;
 }
 document.getElementById("pauseButton").addEventListener("click", pause);
 
@@ -318,3 +370,41 @@ body: JSON.stringify({ timestep: document.getElementById("windTimestep").value})
 
 }
 document.getElementById("windButton").addEventListener("click", wind);
+
+
+function animate(t=0){
+            try{
+
+            if (latestCoords != null) {
+                // Update trails
+                for(let i = 0; i < body_info.length; i++){
+                    body_info[i]['trail'].push({x:  latestCoords[i].x, y: latestCoords[i].y, z : latestCoords[i].z })
+                    if (body_info[i]['trail'].length > MAX_TRAIL) body_info[i]['trail'].shift(); 
+
+                }
+                
+                update_bodies(latestCoords)
+
+                prevtrails.forEach(trail=>{
+                    destroy(trail)
+                })
+                prevtrails = []
+
+                body_info.forEach(info => {
+                    const mat = new THREE.LineBasicMaterial({color: info['c']})
+                    const geo = new THREE.BufferGeometry().setFromPoints(info['trail'] )
+                    const line = new THREE.Line(geo, mat)
+                    scene.add(line)
+                    prevtrails.push(line)
+                });
+            }
+       }catch (e){
+    }
+    requestAnimationFrame(animate);
+    renderer.render(scene, cam) 
+    controls.update()
+
+}
+setInterval(pollCoords, 100);
+
+animate();

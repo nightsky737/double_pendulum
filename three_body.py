@@ -106,6 +106,10 @@ class Simulation:
             self.step()
 
     def step(self, dt: float=0.06):
+  
+        for body in self.bodies:
+            body.a = np.zeros(3)
+
         if self.timestep % self.save_timesteps == 0:
             #add a log
             log = [body.get_logs() for body in self.bodies]
@@ -117,9 +121,7 @@ class Simulation:
 
         for body in self.bodies:
             body.update(dt)
-    
-        for body in self.bodies:
-            body.a = np.zeros(3)
+  
         self.timestep += 1
 
 
@@ -133,9 +135,17 @@ class Simulation:
     def get_body_info(self):
         return [{'r': float(body.r), 'c' : body.c} for body in self.bodies]
 
+    def get_full_body_info(self, idx):
+        body = self.bodies[idx]
+        return  {'r': float(body.r), 'c' : body.c, 'x' : body.x.tolist(), 'v': body.v.tolist(), 'a' : body.a.tolist()}
+
+
     def pause(self):
-        self.paused = not self.paused
-    
+        self.paused = True
+
+    def unpause(self):
+        self.paused = False
+
     def reset(self):
         for body in self.bodies:
             body.rewind(body.initial_state)
@@ -175,6 +185,11 @@ def pause():
     sim.pause()
     return {}
 
+@app.route('/unpause')
+def unpause():
+    sim.unpause()
+    return {}
+
 @app.route('/reset')
 def reset():
     sim.reset()
@@ -183,6 +198,11 @@ def reset():
 @app.route("/get_body_info")
 def body_info():
     return jsonify(sim.get_body_info())
+
+@app.route("/get_full_body_info", methods=["POST"])
+def get_info():
+    if request.method == 'POST':
+        return jsonify(sim.get_full_body_info(request.get_json()['index']))
 
 @app.route("/wind", methods=["POST"]) 
 def wind():

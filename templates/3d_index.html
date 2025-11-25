@@ -40,11 +40,44 @@
 
 <!-- Editing the balls -->
 <div id="mySidebar" class="sidebar">
+  <h1>Body Info</h1>
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-  <a href="#">About</a>
-  <a href="#">Services</a>
-  <a href="#">Clients</a>
-  <a href="#">Contact</a>
+  
+<p>Position (x,y,z)</p>
+<div class="x">
+<input id="pos-x" class="x-group" type="number" step="any" placeholder="x" />
+<input id="pos-y" class="x-group" type="number" step="any" placeholder="y" />
+<input id="pos-z" class="x-group" type="number" step="any" placeholder="z" />
+</div>
+
+
+<p>Velocity (x,y,z)</p>
+<div class="v">
+<input id="vel-x" class="v-group" type="number" step="any" placeholder="x" />
+<input id="vel-y" class="v-group" type="number" step="any" placeholder="y" />
+<input id="vel-z" class="v-group" type="number" step="any" placeholder="z" />
+</div>
+
+<p>Acceleration (x,y,z)</p>
+<div class="a">
+<input id="acc-x" class="a-group" type="number" step="any" placeholder="x" />
+<input id="acc-y" class="a-group" type="number" step="any" placeholder="y" />
+<input id="acc-z" class="a-group" type="number" step="any" placeholder="z" />
+</div>
+
+
+<p>Mass</p>
+<input id="mass" type="number" step="any" placeholder="Mass" style="width: 100%; margin-bottom: 10px;" />
+
+<p>Radius</p>
+<input id="radius" type="number" step="any" placeholder="Radius" style="width: 100%; margin-bottom: 10px;" />
+
+<!-- <button id="add-body">Add Body</button> -->
+
+<!-- 
+<h2>Bodies</h2>
+<div id="body-list"></div> -->
+
 </div>
  
 </body>
