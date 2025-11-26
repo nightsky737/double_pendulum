@@ -13,13 +13,12 @@
 - /UpdateBody (idx, new config) : Sets new body to that idx/config. 
 
 # Todo:
-- overlay navbar
-- Fix jank when resetting while paused
 - CLean logs so when user edits smth it doesnt do weird stuff
 - fix keep trails on reload bodies
 - Separate stuff for separate users
-- spam adding balls somehow breaks it :skull:
 - do the adding ish thing
+- dynamic updates to the sidebar
+- also dont think its actually updating
 
 # What happens:
 - What is saved in previous states? (Ie if someone adds something, do all previous states get erased? )

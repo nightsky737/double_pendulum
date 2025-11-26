@@ -1,11 +1,27 @@
 import math, threading
 import numpy as np
-from flask import Flask, render_template, request, jsonify, url_for
+from flask import Flask, render_template, request, jsonify, url_for, session
 import random
-import json
+import redis
+from flask_cors import CORS
+import os
+from flask_session import Session
+import pickle
+from redis import Redis
 
+app = Flask(__name__)
+CORS(app)  #https://medium.com/@mterrano1/cors-in-a-flask-api-38051388f8cc
 
-app = Flask(__name__) #assuming this makes flask stuff
+app.debug = True
+app.secret_key = os.urandom(12)
+
+SESSION_TYPE = 'redis'
+SESSION_REDIS = redis.Redis(host='localhost')
+app.config.from_object(__name__)
+Session(app)
+
+redis_client = Redis(host="localhost", port=6379)
+
 
 G = 6.67 * 10 ** -6#-11
 
@@ -64,23 +80,6 @@ class body:
         self.x += vector
         if self.isinitial:
             self.initial_state.x += vector
-    def update_values(self, data):
-        if data['x']:
-            self.x = np.array(data['x'])
-            print(self.x)
-        if data['v']:
-            self.v = np.array(data['v'])
-        if data['a']:
-            self.a = np.array(data['x'])
-
-
-        if data['m']:
-            self.m =  data['m']
-        if data['r']:
-            self.r = data['r']
-        if data['c']:
-            2
-            #self.c = data['c']
 
 
 class Simulation:
@@ -178,20 +177,17 @@ class Simulation:
     def remove(self, idx):
         self.bodies.pop(idx)
         self.clean_logs_after()
+    
+    def __hash__(self):
+        return id(self)
 
-    def update_vals(self, data):
-        # data = json.loads(val_dict)
-        #val dict is values dict
-        self.bodies[data['idx']].update_values(data)
 
-# Create simulation instance
 
-sim = Simulation([])
+
 # route to the simulation page
 @app.route('/')
 def index():
-    global sim 
-    sim = Simulation([])
+    sim= Simulation([])
     def run_simulation():
         while True:
             if (not sim.paused):
@@ -199,57 +195,80 @@ def index():
                 threading.Event().wait(0.03)
 
     threading.Thread(target=run_simulation, daemon=True).start()
+    redis_client.set("sim", pickle.dumps(sim))
+
     return render_template('3d_index.html', origin_x=sim.origin_x, origin_y=sim.origin_y)
 
 @app.route('/coords')
 def coords():
+    sim = pickle.loads(redis_client.get("sim"))
     return jsonify(sim.get_coords())
 
 @app.route('/pause')
 def pause():
+    sim = pickle.loads(redis_client.get("sim"))
     sim.pause()
+    redis_client.set("sim", pickle.dumps(sim))
+
     return {}
 
 @app.route('/unpause')
 def unpause():
+
+    sim = pickle.loads(redis_client.get("sim"))
     sim.unpause()
+    redis_client.set("sim", pickle.dumps(sim))
+
     return {}
 
 @app.route('/reset')
 def reset():
+    sim = pickle.loads(redis_client.get("sim"))
     sim.reset()
+    redis_client.set("sim", pickle.dumps(sim))
+
     return {}
 
 @app.route("/get_all_body_info")
 def body_info():
+    sim = pickle.loads(redis_client.get("sim"))
     return jsonify(sim.get_all_body_info())
 
 @app.route("/get_one_body_info", methods=["POST"])
 def get_info():
+    sim = pickle.loads(redis_client.get("sim"))
     if request.method == 'POST':
         return jsonify(sim.get_one_body_info(request.get_json()['index']))
 
 @app.route("/wind", methods=["POST"]) 
 def wind():
-    if request.method == 'POST':  
+    if request.method == 'POST': 
+        sim = pickle.loads(redis_client.get("sim"))
+
         timestep = request.get_json()["timestep"]
         sim.wind(int(timestep))
+
+        redis_client.set("sim", pickle.dumps(sim))
+
         return {}
 
 @app.route("/remove", methods=["POST"]) 
 def remove():
+    sim = session['sim']
     if request.method == 'POST':  
+        sim = pickle.loads(redis_client.get("sim"))
+
         sim.remove(request.get_json()["index"])
-        return {}
 
-@app.route("/update", methods=["POST"]) 
-def update_shit():
-    if request.method == 'POST':  
-        sim.update_vals(request.get_json())#
-        return {}
+        redis_client.set("sim", pickle.dumps(sim))
 
+        return {}
 
 @app.route("/add")
 def add():
+    sim = pickle.loads(redis_client.get("sim"))
+
     sim.add()
+    redis_client.set("sim", pickle.dumps(sim))
+
     return {}

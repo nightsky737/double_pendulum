@@ -5,15 +5,16 @@ import { InteractionManager } from "./libs/three.interactive.js";
 //globalsish
 let prevtrails = []
 let paused = false;
-
+let notupdated = true;
 //rendere setup
 const W = window.innerWidth;
 const H = window.innerHeight;
 const renderer = new THREE.WebGLRenderer(); //antialias helps blend colors ig
 renderer.setSize(W, H);
 document.getElementById("renderer").appendChild(renderer.domElement) 
+document.getElementById('closebtn').onclick = closenav_and_dehighlight
 
-document.querySelectorAll("bodyinput")
+document.querySelectorAll(".bodyinput")
     .forEach(group => group.addEventListener("input", onEdit));
 
 
@@ -80,7 +81,6 @@ function destroy(item){
 
 //Initial setup/info of bodies
 async function setup(){
-    console.log("setting up")
 
     let binfo = []
     await fetch('/get_all_body_info').then(response => { //await functions depending on what is returned: promise -> waits. normal val -> doesnt
@@ -116,7 +116,6 @@ async function setup(){
 }
 
 let body_info = await setup()
-
 async function reload_bodies(keep_trails = false){
     body_info.forEach(info => {
         destroy(info['sphere'])
@@ -126,6 +125,7 @@ async function reload_bodies(keep_trails = false){
         prevtrails.forEach(trail=>{
                 destroy(trail)
             })
+        // resetTrails = true;
     }
     for (let i = 0; i < body_info.length; i++) {
 
@@ -243,10 +243,10 @@ if( curhighlighted != null ){
 curhighlighted = body //now this is the currently clicked
 curhighlightedidx = idx;
 
-updateValues();
+}
 
-//  {'r': float(body.r), 'c' : body.c, 'x' : body.x.tolist(), 'v': body.v.tolist(), 'a' : body.a.tolist()}
-
+function closenav_and_dehighlight(){
+    highlight(curhighlightedidx)
 }
 
 async function updateValues(){
@@ -300,9 +300,6 @@ async function onEdit(e) {
         paused = true;
         await fetch('/pause');
     }
-
-
-
     fetch('/update', {
         method: 'POST',  
         credentials: 'include',
@@ -310,11 +307,22 @@ async function onEdit(e) {
         'Content-Type': 'application/json',  
         "Accept": "application/json"
         },
-    body: JSON.stringify( {'idx' : curhighlightedidx, 'r' : 2  }) 
+    body: JSON.stringify( {'idx' : curhighlightedidx, 
+        'r' : document.getElementById("radius").value ,
+        'm' : document.getElementById("radius").value ,
+
+        'x' : [document.getElementById("pos-x").value , document.getElementById("pos-y").value , document.getElementById("pos-z").value ] ,
+        'a' : [document.getElementById("vel-x").value , document.getElementById("vel-y").value , document.getElementById("vel-z").value ] ,
+        'v' : [document.getElementById("acc-x").value , document.getElementById("acc-y").value , document.getElementById("acc-z").value ] ,
+        'c' : 5
     })
-   
-    reload_bodies();
-  
+    })
+    
+    //cosmetic changes:
+    let curr = body_info[curhighlightedidx]
+    curr['sphere'].position.x = document.getElementById("pos-x").value  / 100
+    curr['sphere'].position.y = document.getElementById("pos-y").value/ 100
+    curr['sphere'].position.z = document.getElementById("pos-z").value / 100
 }
 
 
@@ -336,6 +344,7 @@ header.addEventListener("click", () => {
 async function pause(){
     if (paused){
     await fetch('/unpause');
+    notupdated = true;
     }else{
     await fetch('/pause');
     }
@@ -383,12 +392,13 @@ body: JSON.stringify({ timestep: document.getElementById("windTimestep").value})
 }
 document.getElementById("windButton").addEventListener("click", wind);
 
-
+let lastupdate = 0
 function animate(t=0){
             try{
 
             if (latestCoords != null) {
                 // Update trails
+       
                 for(let i = 0; i < body_info.length; i++){
                     body_info[i]['trail'].push({x:  latestCoords[i].x, y: latestCoords[i].y, z : latestCoords[i].z })
                     if (body_info[i]['trail'].length > MAX_TRAIL) body_info[i]['trail'].shift(); 
@@ -397,6 +407,8 @@ function animate(t=0){
                 
                 update_bodies(latestCoords)
 
+
+                
                 prevtrails.forEach(trail=>{
                     destroy(trail)
                 })
@@ -412,6 +424,12 @@ function animate(t=0){
             }
        }catch (e){
     }
+    if (curhighlighted != null && (lastupdate > 30 && !paused || (paused && notupdated))){
+        updateValues();
+        lastupdate = 0;
+        notupdated = false;
+    }
+    lastupdate++;
     requestAnimationFrame(animate);
     renderer.render(scene, cam) 
     controls.update()
