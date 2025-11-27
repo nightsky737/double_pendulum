@@ -215,6 +215,7 @@ class Simulation:
         # data = json.loads(val_dict)
         #val dict is values dict
         self.bodies[data['idx']].update_values(data)
+    
 
 # Create simulation instance
 
@@ -289,5 +290,8 @@ def add():
 def clipAcc():
     clipped = sim.clipAcc()
     return {'clipped' : clipped}
+
+
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=41877, debug=True)

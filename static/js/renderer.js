@@ -356,7 +356,9 @@ async function onEdit(e) {
     scene.add(sphere)
     curr['sphere'] = sphere
     
-    const geo = new THREE.SphereGeometry(curr['r'] * 1.2, 32, 16)
+    destroy(prevtrails[curhighlightedidx])
+
+    const geo = new THREE.SphereGeometry(parseFloat(document.getElementById("radius").value) * 1.2, 32, 16)
     let mat2 = new THREE.MeshBasicMaterial({
         color:  `rgb(${newc[0]},${newc[1]},${newc[2]})`, 
         transparent: true,
@@ -366,6 +368,7 @@ async function onEdit(e) {
     curr['highlighted_mesh'] = new THREE.Mesh(geo, mat2); 
     curr['sphere'].add(curr['highlighted_mesh']);
 
+    curr['trail'] = []
 
     curr['sphere'].position.x = document.getElementById("pos-x").value  / 100
     curr['sphere'].position.y = document.getElementById("pos-y").value/ 100
@@ -503,6 +506,12 @@ async function highlighsmth(){
 }
 document.getElementById("openButton").addEventListener("click", highlighsmth);
 
+async function deleteball(){
+    remove_body(curhighlightedidx)
+    reload_bodies()
+    closeNav()
+}
+document.getElementById("deleteBall").addEventListener("click", deleteball);
 
 
 async function wind(){
