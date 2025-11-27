@@ -102,6 +102,21 @@ class Simulation:
         self.add()
         self.add()
         self.add()
+    
+    def refresh(self):
+        self.bodies = []
+        self.origin_x = 300
+        self.origin_y = 100
+        self.paused = False
+    
+
+        self.save_timesteps = 1e2 #saves every 10^4 timesteps
+        self.timestep = 0
+        self.logs = {}
+
+        self.add()
+        self.add()
+        self.add()
 
     def clean_logs_after(self):
         #removes logs after self
@@ -194,18 +209,17 @@ class Simulation:
 # Create simulation instance
 
 sim = Simulation([])
+def run_simulation():
+    while True:
+        if (not sim.paused):
+            sim.step()
+            threading.Event().wait(0.03)
+threading.Thread(target=run_simulation, daemon=True).start()
+
 # route to the simulation page
 @app.route('/')
 def index():
-    global sim 
-    sim = Simulation([])
-    def run_simulation():
-        while True:
-            if (not sim.paused):
-                sim.step()
-                threading.Event().wait(0.03)
-
-    threading.Thread(target=run_simulation, daemon=True).start()
+    sim.refresh()
     return render_template('3d_index.html', origin_x=sim.origin_x, origin_y=sim.origin_y)
 
 @app.route('/coords')

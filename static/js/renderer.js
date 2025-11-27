@@ -471,14 +471,21 @@ async function clippAcceleration(){
 document.getElementById("accClip").addEventListener("click", clippAcceleration);
 
 async function tpCam(){
-    
+    let idx = 0
     if (curhighlighted != null){
+        idx = curhighlightedidx
+    }
+    const spherelocation = new THREE.Vector3(body_info[idx]['sphere'].position.x, body_info[idx]['sphere'].position.y, body_info[idx]['sphere'].position.z); 
 
-    cam.position.lerp(body_info[curhighlightedidx]['sphere'].position.x, body_info[curhighlightedidx]['sphere'].position.y, body_info[curhighlightedidx]['sphere'].position.z); 
+    if (curhighlighted == null){
+        cam.position.lerp(spherelocation, 1)
+    // cam.position.set(body_info[curhighlightedidx]['sphere'].position.x, body_info[curhighlightedidx]['sphere'].position.y, body_info[curhighlightedidx]['sphere'].position.z); 
 
     }else{
     if (body_info.length > 0){
-    cam.position.lerp(body_info[0]['sphere'].position.x, body_info[0]['sphere'].position.y, body_info[0]['sphere'].position.z ); 
+        cam.position.lerp(spherelocation, 1)
+
+    // cam.position.set(body_info[0]['sphere'].position.x, body_info[0]['sphere'].position.y, body_info[0]['sphere'].position.z ); 
     }
     
 } 
@@ -574,6 +581,6 @@ function animate(t=0){
     controls.update()
 
 }
-setInterval(pollCoords, 75);
+setInterval(pollCoords, 50);
 
 animate();
