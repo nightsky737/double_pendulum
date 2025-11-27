@@ -95,7 +95,7 @@ async function setup(){
     binfo.forEach(body => {
         body['trail'] = []
         const geometry = new THREE.SphereGeometry( body['r'], 32, 16 );
-        const material = new THREE.MeshBasicMaterial( { color: body['c'] } );
+        const material = new THREE.MeshBasicMaterial( { color: `rgb(${body['c'][0]},${body['c'][1]},${body['c'][2]})`} );
         const sphere = new THREE.Mesh( geometry, material );
         body['sphere'] = sphere
         body['highlighted'] = false;
@@ -290,12 +290,36 @@ async function updateValues(){
         .forEach(group => {
             group.value = curhighdata['a'][i]
         i++;});
-
+    i = 0 
+    document.querySelectorAll(".c-group")
+        .forEach(group => {
+            group.value = curhighdata['c'][i]
+        i++;});
   document.getElementById("mass").value= curhighdata['m'];
     document.getElementById("radius").value= curhighdata['r'];
 
 
 }
+
+
+function rgbToHex(r, g, b) {
+  let hexR = r.toString(16);
+  let hexG = g.toString(16);
+  let hexB = b.toString(16);
+
+  if (hexR.length === 1) {
+    hexR = "0" + hexR;
+  }
+  if (hexG.length === 1) {
+    hexG = "0" + hexG;
+  }
+  if (hexB.length === 1) {
+    hexB = "0" + hexB;
+  }
+
+  return "#" + hexR + hexG + hexB;
+}
+
 
 
 //Editing properties
@@ -318,12 +342,31 @@ async function onEdit(e) {
         'x' : [document.getElementById("pos-x").value , document.getElementById("pos-y").value , document.getElementById("pos-z").value ] ,
         'v' : [document.getElementById("vel-x").value , document.getElementById("vel-y").value , document.getElementById("vel-z").value ] ,
         'a' : [document.getElementById("acc-x").value , document.getElementById("acc-y").value , document.getElementById("acc-z").value ] ,
-        'c' : 5
+        'c' : [document.getElementById("R").value , document.getElementById("G").value , document.getElementById("B").value ] 
     })
     })
     
     //cosmetic changes:
     let curr = body_info[curhighlightedidx]
+    let newc = [document.getElementById("R").value , document.getElementById("G").value , document.getElementById("B").value ]
+    destroy(curr['sphere'])
+    const geometry = new THREE.SphereGeometry( parseFloat(document.getElementById("radius").value), 32, 16 );
+    const material = new THREE.MeshBasicMaterial( { color: `rgb(${newc[0]},${newc[1]},${newc[2]})`} );
+    const sphere = new THREE.Mesh( geometry, material );
+    scene.add(sphere)
+    curr['sphere'] = sphere
+    
+    const geo = new THREE.SphereGeometry(curr['r'] * 1.2, 32, 16)
+    let mat2 = new THREE.MeshBasicMaterial({
+        color:  `rgb(${newc[0]},${newc[1]},${newc[2]})`, 
+        transparent: true,
+        opacity: 0.5,
+    })
+
+    curr['highlighted_mesh'] = new THREE.Mesh(geo, mat2); 
+    curr['sphere'].add(curr['highlighted_mesh']);
+
+
     curr['sphere'].position.x = document.getElementById("pos-x").value  / 100
     curr['sphere'].position.y = document.getElementById("pos-y").value/ 100
     curr['sphere'].position.z = document.getElementById("pos-z").value / 100
@@ -412,7 +455,7 @@ async function getPrev(){
 document.getElementById("prevBall").addEventListener("click", getPrev);
 
 
-async function clippAcceleration(){
+async function clippAcceleration(){ 
     await fetch('/clipAcc').then(response => { //await functions depending on what is returned: promise -> waits. normal val -> doesnt
         return response.json(); 
     }).then(data =>{

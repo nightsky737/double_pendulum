@@ -1,35 +1,36 @@
-# Double Pendulum (Flask + Canvas)
+# 3 body Problem
 
-This simulation was created to be used as skeleton code as part of Hack Club's Accelerate Program.
+# Features
+## 2D Features:
+- Press r to reload
+- Press p to pause
 
-## Project Structure
-- `app.py` — Flask app, `DoublePendulum` class, background simulation, routes
-- `templates/index.html` — Canvas animation and polling logic
-- `requirements.txt` — Python dependencies
+# Flask endpoints:
+- /Coords : Should return a list of coords
+- /Add : Adds smth
+- /Remove : 
+- /Change : takes what should be changed + new value
+- /UpdateBody (idx, new config) : Sets new body to that idx/config. 
+
+# Todo:
+- CLean logs so when user edits smth it doesnt do weird stuff
+- fix keep trails on reload bodies
+- Separate stuff for separate users
+- do the adding ish thing
+- dynamic updates to the sidebar
+- also dont think its actually updating
+
+# What happens:
+- What is saved in previous states? (Ie if someone adds something, do all previous states get erased? )
+    - Yes. Previous states are erased (for now) when any change is made to the state of the simulation.
+    - Where is the starting step? Starting step is now (or first step after change)
 
 
-## Quickstart
+# Functions
+Because I Have the memory of a gerbil and sometimes forget I wrote a fxn.
 
-### 1) Create & activate a virtual environment (Windows PowerShell)
-```powershell
-py -m venv .venv; .\.venv\Scripts\Activate.ps1
-```
+async function remove_body(idx) -> Removes a body by idx
 
-### 2) Install dependencies
-```powershell
-pip install -r requirements.txt
-```
-
-### 3) Run the server
-```powershell
-$env:FLASK_APP = "app"
-flask run
-```
-Then open http://127.0.0.1:5000 in your browser.
-
-## Troubleshooting
-- If you see ImportErrors, ensure you installed from `requirements.txt` into the active venv.
-- If animation stutters, lower `dt`, increase poll frequency, or reduce `MAX_TRAIL`.
-
-## License
-MIT — see project materials.
+async function setup() -> Grabs body info
+add() -> adds a body
+ reload_bodies(keep_trails = false) -> theoretically destrohys all current bodies, gets new info, and then loads bodies based on new info.

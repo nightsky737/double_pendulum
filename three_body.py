@@ -69,22 +69,22 @@ class body:
 
     def update_values(self, data):
         if data['x']:
-            self.x = np.array([float(i) for i in data['x']])
+            self.x = np.array([float(i) if i != ''  else 0 for i  in data['x'] ] )
         if data['v']:
-            self.v = np.array([float(i) for i in data['v']])
+            self.v = np.array([float(i) if i != ''  else 0  for i in data['v']  ] )
             print(self.v)
             print(self.v[0])
         if data['a']:
-            self.a = np.array([float(i) for i in data['a']])
+            self.a = np.array([float(i) if i != ''  else 0 for i in data['a']  ])
 
 
         if data['m']:
-            self.m =  float(data['m'])
+            self.m =  float(data['m'] if data['r'] != '' else 0)
         if data['r']:
-            self.r = float(data['r'])
+            self.r = float(data['r'] if data['r'] != '' else 0)
         if data['c']:
-            2
-            #self.c = data['c']
+            self.c =[min(256, float(i)) if i != ''  else 0  for i in  data['c']  ]
+            self.c = [max(0, i) for i in self.c]
 
 
 class Simulation:
@@ -179,9 +179,8 @@ class Simulation:
 
     def add(self):
         rgb_values = random.randint(150,255),random.randint(150,255),random.randint(150,255) 
-        hex_components = [f"{value:02x}" for value in rgb_values]
-        hex_color_code = '#' + ''.join(hex_components)
-        self.bodies.append(body(np.random.rand(3,) * 400, v=(np.random.rand(3,) - 0.5)* 200,r=random.random()/2, m=10e17, c=hex_color_code))
+
+        self.bodies.append(body(np.random.rand(3,) * 1000 - 500, v=(np.random.rand(3,) - 0.5)* 200,r=random.random()/2, m=10e17, c=rgb_values))
 
     def remove(self, idx):
         self.bodies.pop(idx)
