@@ -6,6 +6,8 @@ import { InteractionManager } from "./libs/three.interactive.js";
 let prevtrails = []
 let paused = false;
 let notupdated = true;
+let shouldFollow = true;
+
 //rendere setup
 const W = window.innerWidth;
 const H = window.innerHeight;
@@ -359,6 +361,30 @@ async function reset(){
 document.getElementById("resetButton").addEventListener("click", reset);
 
 
+async function toggleLook(){
+    if (shouldFollow){
+    
+        if (curhighlighted != null){
+
+        cam.position.set(body_info[curhighlightedidx]['sphere'].position.x, body_info[curhighlightedidx]['sphere'].position.y, body_info[curhighlightedidx]['sphere'].position.z); 
+
+        }else{
+        if (body_info.length > 0){
+
+
+        cam.position.set(body_info[0]['sphere'].position.x, body_info[0]['sphere'].position.y, body_info[0]['sphere'].position.z ); 
+        }
+        
+    }}
+    shouldFollow = !shouldFollow
+
+
+
+}
+document.getElementById("followButton").addEventListener("click", toggleLook);
+
+
+
 async function add(){
     await fetch('/add') 
     reload_bodies()
@@ -370,6 +396,20 @@ async function removeLast(){
     reload_bodies()
 }
 document.getElementById("removeButton").addEventListener("click", removeLast);
+
+async function getNext(){
+    curhighlightedidx += 1
+    curhighlightedidx %= body_info.length
+}
+document.getElementById("nextBall").addEventListener("click", getNext);
+
+
+async function getPrev(){
+    curhighlightedidx -= 1
+    curhighlightedidx  = (curhighlightedidx +  body_info.length) % body_info.length
+}
+document.getElementById("prevBall").addEventListener("click", getPrev);
+
 
 
 async function wind(){
@@ -428,6 +468,21 @@ function animate(t=0){
         updateValues();
         lastupdate = 0;
         notupdated = false;
+    }
+    if(shouldFollow){
+        
+        if (curhighlighted != null){
+
+        cam.lookAt(body_info[curhighlightedidx]['sphere'].position); 
+
+        }else{
+        if (body_info.length > 0){
+
+
+        cam.lookAt(body_info[0]['sphere'].position); 
+        }
+
+        }
     }
     lastupdate++;
     requestAnimationFrame(animate);
