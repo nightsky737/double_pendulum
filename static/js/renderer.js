@@ -200,7 +200,7 @@ async function remove_body(idx){
 function openNav() {
 
   document.getElementById("mySidebar").style.width = "250px";
-  document.getElementById("renderer").style.marginLeft = "250px";
+  document.getElementById("renderer").style.marginLeft = "300px";
 }
 
 function closeNav() {
@@ -500,6 +500,6 @@ function animate(t=0){
     controls.update()
 
 }
-setInterval(pollCoords, 100);
+setInterval(pollCoords, 75);
 
 animate();

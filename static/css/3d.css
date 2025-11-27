@@ -1,5 +1,120 @@
-body {
-  font-family: "Lato", sans-serif;
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Orbitron', sans-serif;
+  background: #000209;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+#renderer {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  position: relative;
+  z-index: 0;
+}
+
+#controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 200px;
+  background: rgba(10, 10, 25, 0.85);
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #0ff;
+  z-index: 10;
+  max-width: 200px;
+}
+
+#overlay-header {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  cursor: pointer;
+  color: #0ff;
+  text-align: center;
+}
+
+#overlay-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#overlay-content button, 
+#overlay-content input {
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.9em;
+  background: rgba(0, 255, 255, 0.1);
+  color: #0ff;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+#overlay-content button:hover {
+  background: rgba(0, 255, 255, 0.3);
+  cursor: pointer;
+}
+
+#overlay-content input {
+  background: rgba(0, 0, 40, 0.6);
+  color: #0ff;
+  text-align: center;
+}
+
+.bodyinput {
+  width: 100%;
+  padding: 6px;
+  border-radius: 5px;
+  border: none;
+  background: rgba(0, 0, 40, 0.6);
+  color: #0ff;
+  margin-bottom: 10px;
+  text-align: center;
+  outline: none;
+}
+
+.bodyinput:focus {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 10px #0ff;
+}
+
+.x, .v, .a {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.x input, .v input, .a input {
+  flex: 1;
+}
+
+
+#prevBall, #nextBall {
+  width: 48%;
+  background: rgba(0, 255, 255, 0.1);
+  margin-top: 5px;
+  color: rgb(226, 226, 255)
+
+}
+
+#prevBall:hover, #nextBall:hover {
+  background: rgba(0, 255, 255, 0.3);
+  cursor: pointer;
+}
+
+button {
+  box-shadow: 0 0 5px #0ff, 0 0 10px;
 }
 
 .sidebar {
@@ -8,8 +123,12 @@ body {
   position: fixed;
   z-index: 1;
   top: 0;
+
+  margin-left: 25px;
+  font-family: 'Orbitron', sans-serif;
+
   left: 0;
-  background-color: #111;
+  background-color: #000209;
   overflow-x: hidden;
   transition: 0.5s;
   padding-top: 60px;
@@ -20,7 +139,7 @@ body {
   padding: 8px 8px 8px 32px;
   text-decoration: none;
   font-size: 25px;
-  color: #818181;
+  color: #375e80;
   display: block;
   transition: 0.3s;
 }
@@ -35,30 +154,4 @@ body {
   right: 25px;
   font-size: 36px;
   margin-left: 50px;
-}
-
-
-#controls {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 200px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    font-family: sans-serif;
-    border-radius: 8px;
-    overflow: hidden;
-    user-select: none;
-    z-index: 9999;
-}
-
-#overlay-header {
-    padding: 10px;
-    cursor: pointer;
-    background: rgba(255,255,255,0.1);
-}
-
-#overlay-content {
-    padding: 10px;
-    display: none; 
 }
