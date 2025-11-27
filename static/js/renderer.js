@@ -444,12 +444,14 @@ document.getElementById("removeButton").addEventListener("click", removeLast);
 
 async function getNext(){
     highlight((curhighlightedidx + 1) % body_info.length)
+    notupdated = true;
 }
 document.getElementById("nextBall").addEventListener("click", getNext);
 
 
 async function getPrev(){
     highlight(curhighlightedidx -1 +  body_info.length) % body_info.length
+    notupdated = true;
     
 }
 document.getElementById("prevBall").addEventListener("click", getPrev);
@@ -575,6 +577,8 @@ function animate(t=0){
 
         }
     }
+    console.log(notupdated)
+
     lastupdate++;
     requestAnimationFrame(animate);
     renderer.render(scene, cam) 

@@ -85,8 +85,8 @@ class body:
         if data['c']:
             self.c =[min(256, float(i)) if i != ''  else 0  for i in  data['c']  ]
             self.c = [max(0, i) for i in self.c]
-
-
+        
+        self.logs = {}
 class Simulation:
     def __init__(self, bodies):
         self.bodies = bodies
@@ -104,7 +104,8 @@ class Simulation:
         self.add()
     
     def refresh(self):
-        self.bodies = []
+        self.bodies = []    
+
         self.origin_x = 300
         self.origin_y = 100
         self.paused = False
@@ -117,6 +118,15 @@ class Simulation:
         self.add()
         self.add()
         self.add()
+
+
+    
+    def run_collisions(self):
+        for i in range(len(self.bodies)):
+            for j in range(i + 1, len(self.bodies)):
+                body1 = self.bodies[i]
+                body2 = self.bodies[j]
+
 
     def clean_logs_after(self):
         #removes logs after self
