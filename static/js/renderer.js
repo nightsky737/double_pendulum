@@ -412,6 +412,37 @@ async function getPrev(){
 document.getElementById("prevBall").addEventListener("click", getPrev);
 
 
+async function clippAcceleration(){
+    await fetch('/clipAcc').then(response => { //await functions depending on what is returned: promise -> waits. normal val -> doesnt
+        return response.json(); 
+    }).then(data =>{
+        console.log(data)
+        if(data['clipped']){
+            document.getElementById("accClip").textContent = "Acceleration Clipping: On"
+        }else{
+        document.getElementById("accClip").textContent = "Acceleration Clipping: Off"
+        }
+    }
+    )
+}
+document.getElementById("accClip").addEventListener("click", clippAcceleration);
+
+async function tpCam(){
+    
+    if (curhighlighted != null){
+
+    cam.position.lerp(body_info[curhighlightedidx]['sphere'].position.x, body_info[curhighlightedidx]['sphere'].position.y, body_info[curhighlightedidx]['sphere'].position.z); 
+
+    }else{
+    if (body_info.length > 0){
+    cam.position.lerp(body_info[0]['sphere'].position.x, body_info[0]['sphere'].position.y, body_info[0]['sphere'].position.z ); 
+    }
+    
+} 
+
+}
+document.getElementById("tpCam").addEventListener("click", tpCam);
+
 async function highlighsmth(){
     if (body_info.length > 0){
     highlight(0)

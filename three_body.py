@@ -7,7 +7,7 @@ import json
 
 app = Flask(__name__) #assuming this makes flask stuff
 
-G = 6.67 * 10 ** -6#-11
+G = 6.67 * 10 ** -11
 
 class body:
     def __init__(self, x=np.array([0,0,0], dtype='float64'),
@@ -19,7 +19,7 @@ class body:
         self.m = m
         self.c = c
         self.r = r
-
+        self.clip_acc = True
 
         self.isinitial = True
         self.initial_state = {'x' : np.copy(x), 'v': np.copy(v), 'a': np.copy(a), 'm': np.copy(m), 'c': c[:], 'r' : r}
@@ -45,7 +45,8 @@ class body:
         difference = self.x  - other.x
         r_squared = sum(difference * difference)
         a = G * self.m / r_squared if r_squared != 0 else r_squared
-        a = max(a, 100)
+        if self.clip_acc:
+            a = min(a, 1e3)
         #this only gives magnitude
 
         #OOOH THE VECTORIZED SHIT YES BUT DIRECTION
@@ -146,6 +147,10 @@ class Simulation:
   
         self.timestep += 1
 
+    def clipAcc(self):
+        for body in self.bodies:
+            body.clip_acc = not body.clip_acc
+        return body.clip_acc
 
     def get_coords(self):
         if self.paused:
@@ -176,7 +181,7 @@ class Simulation:
         rgb_values = random.randint(150,255),random.randint(150,255),random.randint(150,255) 
         hex_components = [f"{value:02x}" for value in rgb_values]
         hex_color_code = '#' + ''.join(hex_components)
-        self.bodies.append(body(np.random.rand(3,) * 400, v=(np.random.rand(3,) - 0.5)* 200,r=random.random()/2, m= 10e10, c=hex_color_code))
+        self.bodies.append(body(np.random.rand(3,) * 400, v=(np.random.rand(3,) - 0.5)* 200,r=random.random()/2, m=10e17, c=hex_color_code))
 
     def remove(self, idx):
         self.bodies.pop(idx)
@@ -256,5 +261,10 @@ def update_shit():
 def add():
     sim.add()
     return {}
+
+@app.route("/clipAcc")
+def clipAcc():
+    clipped = sim.clipAcc()
+    return {'clipped' : clipped}
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=41877, debug=True)
